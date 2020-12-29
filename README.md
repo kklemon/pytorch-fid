@@ -13,12 +13,14 @@ Further insights and an independent evaluation of the FID score can be found in 
 
 The weights and the model are exactly the same as in [the official Tensorflow implementation](https://github.com/bioinf-jku/TTUR), and were tested to give very similar results (e.g. `.08` absolute error and `0.0009` relative error on LSUN, using ProGAN generated images). However, due to differences in the image interpolation implementation and library backends, FID results still differ slightly from the original implementation. So if you report FID scores in your paper, and you want them to be *exactly comparable* to FID scores reported in other papers, you should consider using [the official Tensorflow implementation](https://github.com/bioinf-jku/TTUR).
 
+**Note:** this is a fork from [https://github.com/mseitzer/pytorch-fid](mseitzer/pytorch-fid) which has been updated, to make usage from code easier. See usage instructions below.
+
 ## Installation
 
 Install from [pip](https://pypi.org/project/pytorch-fid/):
 
 ```
-pip install pytorch-fid
+pip install git+https://github.com/kklemon/pytorch-fid
 ```
 
 Requirements:
@@ -31,12 +33,34 @@ Requirements:
 
 ## Usage
 
+### From command line
+
 To compute the FID score between two datasets, where images of each dataset are contained in an individual folder:
 ```
-python -m pytorch_fid path/to/dataset1 path/to/dataset2
+pytorch-fid path/to/dataset1 path/to/dataset2
 ```
 
-To run the evaluation on GPU, use the flag `--gpu N`, where `N` is the index of the GPU to use. 
+To run the evaluation on a specific device, e.g. the GPU, use the `--device D` option.
+
+Calculating activations for large datasets may be computationally expensive. To cache activation statistics, use the `--cache` flag.
+
+### From code
+
+```python
+from pytorch_fid import FrechetInceptionDistance
+
+model = FrechetInceptionDistance.get_inception_model()
+
+# Optional: move to GPU
+model = model.cuda()
+
+fid = FrechetInceptionDistance(model)
+stats1 = fid.get_activation_statistics(batches1)
+stats2 = fid.get_activation_statistics(batches2)
+score = fid.calculate_frechet_distance(*stats1, *stats2)
+
+print(score)
+```
 
 ### Using different layers for feature maps
 
